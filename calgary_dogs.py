@@ -52,7 +52,6 @@ def main():
 
     #  3. Calculate and print the percentage of selected breed registrations out of
     # the total percentage for each year (2021, 2022, 2023).
-    # 
     breed_registries_per_year = df.loc[(breed, slice(None)), [
         'Total']].groupby('Year').sum()
 
