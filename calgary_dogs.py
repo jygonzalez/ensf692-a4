@@ -76,19 +76,21 @@ def main():
 
     #  3. Calculate and print the percentage of selected breed registrations out of
     # the total percentage for each year (2021, 2022, 2023).
-    for year in range(2021, 2024):
-        breed_registries_in_year = df_reindexed.loc[(
-            breed, year), :].Total.sum()
-        total_registries_in_year = df_reindexed.loc[(
-            slice(None), year), :].Total.sum()
-        percentage_in_year = (breed_registries_in_year /
-                              total_registries_in_year) * 100
-        print(f"The {breed} was {
-              percentage_in_year:.6f}% of top breeds in {year}.")
+    breed_registries_per_year = df_reindexed.loc[(breed, slice(None)), [
+        'Total']].groupby('Year').sum()
+    
+    total_registries_per_year = df_reindexed.loc[(), [
+        'Total']].groupby('Year').sum()
+
+    for year in breed_registries_per_year.index:
+        breed_count = breed_registries_per_year.loc[year]['Total']
+        total_count = total_registries_per_year.loc[year]['Total']
+        percentage = (breed_count / total_count) * 100
+        print(f"The {breed} was {percentage:.6f}% of top breeds in {year}.")
 
     # 4. Calculate and print the percentage of selected breed registrations out of the total
     # three-year percentage.
-    total_registries = df_reindexed.loc[:, :].Total.sum()
+    total_registries = df_reindexed.Total.sum()
     percentage_in_all_years = (breed_total_registries / total_registries) * 100
     print(f"The {breed} was {
           percentage_in_all_years:.6f}% of top breeds across all years.")
