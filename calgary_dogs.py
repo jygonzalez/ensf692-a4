@@ -8,39 +8,15 @@
     functions, variables, etc. 
     You may import any modules from the standard Python library.
     Remember to include docstrings and comments.
-
-* Stage 1: DataFrame Creation
-  1. Import the provided data into a Pandas DataFrame. 
-  2. You may not change or sort the Excel file.
-  3. You may not hard-code/copy-paste any information into your program 
-  except for the expected years and column header names.
-  4. You may index the information in any way.
-
-* Stage 2: User Entry
-  1. Prompt the user to enter a dog breed.
-  2. If the name does not exist within the given data, raise a KeyError to print 
-  “Dog breed not found in the data. Please try again.” 
-  3. Users should be prompted continually until a correct input is provided.
-  4. As long as the entry is spelled correctly, your program should accept entries in uppercase, 
-  lowercase, camel case, and mixed case.
-  5. You may assume that the user knows how the breed names are identified in the database.
-  6. After successful data entry and analysis, your program should end.
-
-* Stage 3: Data Analysis
-  1. Find and print all years where the selected breed was listed in the top breeds.
-  2. Calculate and print the total number of registrations of the selected breed.
-  3. Calculate and print the percentage of selected breed registrations out of the total 
-  percentage for each year (2021, 2022, 2023).
-  4. Calculate and print the percentage of selected breed registrations out of the total 
-  three-year percentage.
-  5. Find and print the months that were most popular for the selected breed registrations. 
-  Print all months that tie.
 """
 import numpy as np
 import pandas as pd
 
 
 def main():
+    """
+    Main function to execute the program and print dogs statistics.
+    """
 
     # Import data here
     df = pd.read_excel("CalgaryDogBreeds.xlsx")
@@ -62,42 +38,53 @@ def main():
 
     # Data anaylsis stage
     # multi-index Pandas DataFrame
-    df_reindexed = df.set_index(['Breed', 'Year'])
+    df = df.set_index(['Breed', 'Year'])
 
     # 1. Find and print all years where the selected breed was listed in the top breeds.
-    str_list = [str(i) for i in df_reindexed.loc[breed, :].index.unique()]
+    str_list = [str(i) for i in df.loc[breed, :].index.unique()]
     unique_years = ' '.join(str_list)
     print(f"The {breed} was found in the top breeds for years: {unique_years}")
 
     # 2. Calculate and print the total number of registrations of the selected breed.
-    breed_total_registries = df_reindexed.loc[breed, :].Total.sum()
+    breed_total_registries = df.loc[breed].Total.sum()
     print(f"There have been {breed_total_registries} {
           breed} dogs registered total.")
 
     #  3. Calculate and print the percentage of selected breed registrations out of
     # the total percentage for each year (2021, 2022, 2023).
-    breed_registries_per_year = df_reindexed.loc[(breed, slice(None)), [
-        'Total']].groupby('Year').sum()
-    
-    total_registries_per_year = df_reindexed.loc[(), [
+    # 
+    breed_registries_per_year = df.loc[(breed, slice(None)), [
         'Total']].groupby('Year').sum()
 
-    for year in breed_registries_per_year.index:
-        breed_count = breed_registries_per_year.loc[year]['Total']
-        total_count = total_registries_per_year.loc[year]['Total']
-        percentage = (breed_count / total_count) * 100
+    total_registries_per_year = df.loc[(), [
+        'Total']].groupby('Year').sum()
+
+    # Rename columns for clarity before joining
+    total_registries_per_year.columns = ['All_Breeds']
+    breed_registries_per_year.columns = ['My_Breed']
+
+    # Use join to merge DataFrames
+    # If the breed has no registries in a year, value will be treated as '0' for calculations
+    df_registries = total_registries_per_year.join(
+        breed_registries_per_year,
+        how='left' # Keep all years
+    ).fillna(0) # Set NaN values to 0
+
+    for year in df_registries.index:
+        percentage = (df_registries.loc[year].My_Breed /
+                      df_registries.loc[year].All_Breeds) * 100
         print(f"The {breed} was {percentage:.6f}% of top breeds in {year}.")
 
     # 4. Calculate and print the percentage of selected breed registrations out of the total
     # three-year percentage.
-    total_registries = df_reindexed.Total.sum()
+    total_registries = df.Total.sum()
     percentage_in_all_years = (breed_total_registries / total_registries) * 100
     print(f"The {breed} was {
           percentage_in_all_years:.6f}% of top breeds across all years.")
 
     # 5. Find and print the months that were most popular for the selected breed registrations.
     # Print all months that tie.
-    month_counts = df_reindexed.loc[breed].groupby('Month').count()
+    month_counts = df.loc[breed].groupby('Month').count()
     max_count = np.max(month_counts.values.astype(int))
     mask_max_count = month_counts.values == max_count
     breed_popmonths_list = list(
