@@ -9,6 +9,9 @@
     You may import any modules from the standard Python library.
     Remember to include docstrings and comments.
 """
+
+# TODO: Add comments throughout the code to explain the functionality
+# TODO: Review variable names are clear and 
 import numpy as np
 import pandas as pd
 
@@ -51,27 +54,17 @@ def main():
           breed} dogs registered total.")
 
     #  3. Calculate and print the percentage of selected breed registrations out of
-    # the total percentage for each year (2021, 2022, 2023).
+    # the total percentage for each year it is found.
     breed_registries_per_year = df.loc[(breed, slice(None)), [
         'Total']].groupby('Year').sum()
 
     total_registries_per_year = df.loc[(), [
         'Total']].groupby('Year').sum()
 
-    # Rename columns for clarity before joining
-    total_registries_per_year.columns = ['All_Breeds']
-    breed_registries_per_year.columns = ['My_Breed']
-
-    # Use join to merge DataFrames
-    # If the breed has no registries in a year, value will be treated as '0' for calculations
-    df_registries = total_registries_per_year.join(
-        breed_registries_per_year,
-        how='left' # Keep all years
-    ).fillna(0) # Set NaN values to 0
-
-    for year in df_registries.index:
-        percentage = (df_registries.loc[year].My_Breed /
-                      df_registries.loc[year].All_Breeds) * 100
+    for year in breed_registries_per_year.index:
+        my_breed = breed_registries_per_year.loc[year]['Total']
+        all_breeds = total_registries_per_year.loc[year]['Total']
+        percentage = (my_breed / all_breeds) * 100
         print(f"The {breed} was {percentage:.6f}% of top breeds in {year}.")
 
     # 4. Calculate and print the percentage of selected breed registrations out of the total
