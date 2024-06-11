@@ -35,7 +35,7 @@ def main():
         # Check if the entered breed exists in the dataset. If found, exit the loop
         if np.any(df['Breed'] == breed):
             break
-      
+    
         # 3. If breed is not found, raise a KeyError and start again
         try:
             raise KeyError
